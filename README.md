@@ -28,14 +28,22 @@ docker compose up --build
 ```
 
 #### ⚠️ Solusi Jika Muncul Error `"docker is not recognized..."`:
-Jika terminal Anda memunculkan error bahwa perintah `docker` tidak dikenali, hal ini disebabkan oleh jalur instalasi (*PATH*) Docker yang belum terdaftar di komputer tersebut. Anda dapat mengatasinya dengan menggunakan **Path Absolut** berikut:
+Jika terminal memunculkan error bahwa perintah `docker` tidak dikenali, artinya letak instalasi Docker belum terdaftar di *PATH*. Lokasi instalasi Docker **berbeda-beda di setiap komputer** (ada yang di `C:\Program Files`, ada yang di `AppData`).
 
-* **Jika Docker terinstal di Program Files:**
+**✅ Cara paling aman: auto-deteksi (berfungsi di semua komputer)**
+```powershell
+$docker = Get-ChildItem "C:\Program Files\Docker","$env:LOCALAPPDATA\Programs\DockerDesktop" -Recurse -Filter docker.exe -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+if ($docker) { & $docker compose up --build } else { Write-Host "Docker belum terinstal di komputer ini" }
+```
+
+**Cara alternatif: gunakan path yang sesuai dengan komputer Anda**
+
+* Jika Docker terinstal di Program Files:
   ```powershell
   & "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose up --build
   ```
 
-* **Jika Docker terinstal di folder AppData:**
+* Jika Docker terinstal di folder AppData:
   ```powershell
   & "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin\docker.exe" compose up --build
   ```
