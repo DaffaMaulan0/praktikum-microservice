@@ -22,16 +22,23 @@ cd praktikum-microservice
 
 ### 2. Jalankan dengan Docker Compose
 
-#### Opsi A: Jika perintah `docker` sudah terdaftar di sistem:
+#### 🔹 Solusi Utama (Jika perintah `docker` sudah dikenali sistem):
 ```powershell
 docker compose up --build
 ```
 
-#### Opsi B: Jika muncul error *"docker is not recognized..."* (Belum terdaftar di PATH):
-Gunakan path absolut direktori Docker di komputer Anda:
-```powershell
-& "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin\docker.exe" compose up --build
-```
+#### ⚠️ Solusi Jika Muncul Error `"docker is not recognized..."`:
+Jika terminal Anda memunculkan error bahwa perintah `docker` tidak dikenali, hal ini disebabkan oleh jalur instalasi (*PATH*) Docker yang belum terdaftar di komputer tersebut. Anda dapat mengatasinya dengan menggunakan **Path Absolut** berikut:
+
+* **Jika Docker terinstal di Program Files:**
+  ```powershell
+  & "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose up --build
+  ```
+
+* **Jika Docker terinstal di folder AppData:**
+  ```powershell
+  & "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin\docker.exe" compose up --build
+  ```
 
 > *Catatan: Tunggu sekitar 10–30 detik pada percobaan pertama hingga database MySQL dan PostgreSQL selesai melakukan inisialisasi awal.*
 
