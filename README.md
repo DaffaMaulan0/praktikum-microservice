@@ -21,10 +21,18 @@ cd praktikum-microservice
 ```
 
 ### 2. Jalankan dengan Docker Compose
-Build dan jalankan seluruh kontainer secara otomatis menggunakan Docker Compose:
+
+#### Opsi A: Jika perintah `docker` sudah terdaftar di sistem:
 ```powershell
 docker compose up --build
 ```
+
+#### Opsi B: Jika muncul error *"docker is not recognized..."* (Belum terdaftar di PATH):
+Gunakan path absolut direktori Docker di komputer Anda:
+```powershell
+& "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin\docker.exe" compose up --build
+```
+
 > *Catatan: Tunggu sekitar 10–30 detik pada percobaan pertama hingga database MySQL dan PostgreSQL selesai melakukan inisialisasi awal.*
 
 ---
