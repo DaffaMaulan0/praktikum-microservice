@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Akademik</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      padding: 2.5rem 1rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.025em;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Alert Message */
+    #msg {
+      display: none;
+      padding: 0.85rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    #msg:not(:empty) {
+      display: block;
+    }
+
+    /* Card Panels */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Forms */
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    input, select {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background-color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    /* Buttons */
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: var(--primary);
+      color: #ffffff;
+      transition: background-color 0.15s ease, transform 0.05s ease;
+      white-space: nowrap;
+    }
+
+    button:hover { background-color: var(--primary-hover); }
+    button:active { transform: scale(0.98); }
+
+    /* Action Table Buttons */
+    .btn-edit {
+      background-color: #f1f5f9;
+      color: #334155;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      border: 1px solid #cbd5e1;
+      margin-right: 0.35rem;
+    }
+    .btn-edit:hover {
+      background-color: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-del {
+      background-color: #fee2e2;
+      color: #dc2626;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+    .btn-del:hover {
+      background-color: #fecaca;
+    }
+
+    /* Table */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    /* Empty State */
+    table:empty::before {
+      content: "Tidak ada data.";
+      display: block;
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Dashboard Akademik</h1>
+    <p>Kelola data mahasiswa, mata kuliah, dan kartu rencana studi.</p>
+  </div>
+
+  <p id="msg"></p>
+
+  <!-- Mahasiswa -->
+  <section class="card">
+    <h2>Data Mahasiswa</h2>
+    <form id="f-mhs">
+      <input name="nim" placeholder="NIM" required>
+      <input name="nama" placeholder="Nama Lengkap" required>
+      <input name="email" type="email" placeholder="Email">
+      <input name="angkatan" type="number" placeholder="Angkatan">
+      <button type="submit">Tambah Mahasiswa</button>
+    </form>
+    <div class="table-responsive">
+      <table id="t-mhs"></table>
+    </div>
+  </section>
+
+  <!-- Mata Kuliah -->
+  <section class="card">
+    <h2>Mata Kuliah</h2>
+    <form id="f-mk">
+      <input name="kode" placeholder="Kode MK" required>
+      <input name="nama" placeholder="Nama Mata Kuliah" required>
+      <input name="sks" type="number" placeholder="SKS" required>
+      <input name="semester" type="number" placeholder="Semester">
+      <button type="submit">Tambah MK</button>
+    </form>
+    <div class="table-responsive">
+      <table id="t-mk"></table>
+    </div>
+  </section>
+
+  <!-- KRS -->
+  <section class="card">
+    <h2>Pengambilan Mata Kuliah (KRS)</h2>
+    <form id="f-krs">
+      <select id="s-mhs"></select>
+      <select id="s-mk"></select>
+      <button type="submit">Ambil Mata Kuliah</button>
+    </form>
+    <div class="table-responsive">
+      <table id="t-krs"></table>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let mhsList = [], mkList = [], krsList = [];
+
+async function api(url, method = 'GET', body) {
+  const r = await fetch(url, {
+    method,
+    headers: {'Content-Type': 'application/json'},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const d = r.status === 204 ? {} : await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Error ' + r.status);
+  return d;
+}
+
+async function run(fn) {
+  try { 
+    $('#msg').textContent = ''; 
+    await fn(); 
+    await load(); 
+  } catch (e) { 
+    $('#msg').textContent = e.message; 
+  }
+}
+
+const formData = f => Object.fromEntries([...new FormData(f)].map(([k, v]) =>
+  [k, f[k].type === 'number' ? (v === '' ? null : Number(v)) : v]));
+
+async function load() {
+  [mhsList, mkList] = await Promise.all([api('/mahasiswa'), api('/matkul')]);
+  
+  $('#t-mhs').innerHTML =
+    '<thead><tr><th>NIM</th><th>Nama</th><th>Email</th><th>Angkatan</th><th>Aksi</th></tr></thead><tbody>' +
+    mhsList.map((m, i) => `<tr>
+      <td><strong>${esc(m.nim)}</strong></td>
+      <td>${esc(m.nama)}</td>
+      <td>${esc(m.email || '-')}</td>
+      <td>${esc(m.angkatan || '-')}</td>
+      <td>
+        <button type="button" class="btn-edit" onclick='editMhs(${i})'>Edit</button>
+        <button type="button" class="btn-del" onclick='delMhs(${i})'>Hapus</button>
+      </td>
+    </tr>`).join('') + '</tbody>';
+
+  $('#t-mk').innerHTML =
+    '<thead><tr><th>Kode</th><th>Nama</th><th>SKS</th><th>Semester</th><th>Aksi</th></tr></thead><tbody>' +
+    mkList.map((k, i) => `<tr>
+      <td><strong>${esc(k.kode)}</strong></td>
+      <td>${esc(k.nama)}</td>
+      <td>${esc(k.sks)}</td>
+      <td>${esc(k.semester || '-')}</td>
+      <td>
+        <button type="button" class="btn-edit" onclick='editMk(${i})'>Edit</button>
+        <button type="button" class="btn-del" onclick='delMk(${i})'>Hapus</button>
+      </td>
+    </tr>`).join('') + '</tbody>';
+
+  const cur = $('#s-mhs').value;
+  $('#s-mhs').innerHTML = mhsList.map(m => `<option value='${esc(m.nim)}'>${esc(m.nim)} - ${esc(m.nama)}</option>`).join('');
+  $('#s-mhs').value = cur;
+  
+  $('#s-mk').innerHTML = mkList.map(k => `<option value='${esc(k.kode)}'>${esc(k.kode)} - ${esc(k.nama)}</option>`).join('');
+  await loadKrs();
+}
+
+async function loadKrs() {
+  const nim = $('#s-mhs').value;
+  if (!nim) { $('#t-krs').innerHTML = ''; krsList = []; return; }
+  krsList = await api(`/mahasiswa/${encodeURIComponent(nim)}/matkul`);
+  $('#t-krs').innerHTML = 
+    '<thead><tr><th>Kode</th><th>Nama Mata Kuliah</th><th>SKS</th><th>Aksi</th></tr></thead><tbody>' +
+    krsList.map((k, i) => `<tr>
+      <td><strong>${esc(k.kode_mk)}</strong></td>
+      <td>${esc(k.nama)}</td>
+      <td>${esc(k.sks)}</td>
+      <td><button type="button" class="btn-del" onclick='batal(${i})'>Batal Ambil</button></td>
+    </tr>`).join('') + '</tbody>';
+}
+
+$('#s-mhs').onchange = () => run(() => Promise.resolve());
+$('#f-mhs').onsubmit = e => { e.preventDefault(); run(async () => { await api('/mahasiswa', 'POST', formData(e.target)); e.target.reset(); }); };
+$('#f-mk').onsubmit = e => { e.preventDefault(); run(async () => { await api('/matkul', 'POST', formData(e.target)); e.target.reset(); }); };
+$('#f-krs').onsubmit = e => { e.preventDefault(); run(() => api(`/mahasiswa/${encodeURIComponent($('#s-mhs').value)}/matkul`, 'POST', {kode_mk: $('#s-mk').value})); };
+
+const editMhs = i => { const n = prompt('Nama baru:', mhsList[i].nama); if (n) run(() => api('/mahasiswa/' + mhsList[i].nim, 'PUT', {nama: n})); };
+const delMhs = i => confirm('Hapus mahasiswa ini?') && run(() => api('/mahasiswa/' + mhsList[i].nim, 'DELETE'));
+const editMk = i => { const n = prompt('Nama baru:', mkList[i].nama); if (n) run(() => api('/matkul/' + mkList[i].kode, 'PUT', {nama: n})); };
+const delMk = i => confirm('Hapus mata kuliah ini?') && run(() => api('/matkul/' + mkList[i].kode, 'DELETE'));
+const batal = i => run(() => api(`/mahasiswa/${encodeURIComponent($('#s-mhs').value)}/matkul/${krsList[i].kode_mk}`, 'DELETE'));
+
+run(() => Promise.resolve());
+</script>
+</body>
+</html>
