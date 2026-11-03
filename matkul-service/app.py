@@ -1,12 +1,16 @@
 import os
 import time
+import requests
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 db = SQLAlchemy(app)
+
+MAHASISWA_URL = os.getenv('MAHASISWA_URL', 'http://mahasiswa-service:5000')
 
 class MataKuliah(db.Model):
     __tablename__ = 'mata_kuliah'
@@ -21,9 +25,28 @@ class MataKuliah(db.Model):
 def error(pesan, kode):
     return jsonify({'error': pesan}), kode
 
+@app.get('/health')
+def health():
+    try:
+        db.session.execute(text('SELECT 1'))
+        return jsonify({'status': 'healthy', 'service': 'matkul-service', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+
 @app.get('/matkul')
 def list_mk():
     data = MataKuliah.query.order_by(MataKuliah.kode).all()
+    return jsonify([m.to_dict() for m in data])
+
+@app.post('/matkul/batch')
+def batch_mk():
+    d = request.get_json(silent=True) or {}
+    kode_list = d.get('kode', [])
+    if not isinstance(kode_list, list):
+        return error('kode harus berupa array list', 400)
+    if not kode_list:
+        return jsonify([])
+    data = MataKuliah.query.filter(MataKuliah.kode.in_(kode_list)).all()
     return jsonify([m.to_dict() for m in data])
 
 @app.post('/matkul')
@@ -66,6 +89,13 @@ def delete_mk(kode):
         return error('mata kuliah tidak ditemukan', 404)
     db.session.delete(m)
     db.session.commit()
+    
+    # Beritahu mahasiswa-service untuk membersihkan KRS terkait (Cascade across services)
+    try:
+        requests.delete(f'{MAHASISWA_URL}/internal/krs/matkul/{kode}', timeout=3)
+    except requests.RequestException:
+        pass
+        
     return '', 204
 
 def init_db():
@@ -81,7 +111,7 @@ def init_db():
                     ])
                     db.session.commit()
             return
-        except Exception as e:
+        except Exception:
             time.sleep(2)
     raise RuntimeError('database tidak tersedia')
 

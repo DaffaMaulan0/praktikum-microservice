@@ -3,6 +3,7 @@ import time
 import requests
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -29,6 +30,14 @@ class Krs(db.Model):
 
 def error(pesan, kode):
     return jsonify({'error': pesan}), kode
+
+@app.get('/health')
+def health():
+    try:
+        db.session.execute(text('SELECT 1'))
+        return jsonify({'status': 'healthy', 'service': 'mahasiswa-service', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 @app.get('/mahasiswa')
 def list_mhs():
@@ -81,15 +90,29 @@ def delete_mhs(nim):
 def list_krs(nim):
     if not db.session.get(Mahasiswa, nim):
         return error('mahasiswa tidak ditemukan', 404)
+    krs_records = Krs.query.filter_by(nim=nim).all()
+    if not krs_records:
+        return jsonify([])
+        
+    kode_list = [k.kode_mk for k in krs_records]
+    matkul_map = {}
+    try:
+        r = requests.post(f'{MATKUL_URL}/matkul/batch', json={'kode': kode_list}, timeout=3)
+        if r.ok:
+            for item in r.json():
+                matkul_map[item['kode']] = item
+    except requests.RequestException:
+        pass
+        
     hasil = []
-    for k in Krs.query.filter_by(nim=nim).all():
+    for k in krs_records:
         item = {'kode_mk': k.kode_mk}
-        try:
-            r = requests.get(f'{MATKUL_URL}/matkul/{k.kode_mk}', timeout=3)
-            if r.ok:
-                item.update(r.json())
-        except requests.RequestException:
-            item['catatan'] = 'detail matkul tidak tersedia'
+        if k.kode_mk in matkul_map:
+            item.update(matkul_map[k.kode_mk])
+        else:
+            item['nama'] = '(Detail matkul tidak tersedia)'
+            item['sks'] = '-'
+            item['catatan'] = 'Detail matkul tidak tersedia atau telah dihapus'
         hasil.append(item)
     return jsonify(hasil)
 
@@ -124,13 +147,19 @@ def batal_matkul(nim, kode_mk):
     db.session.commit()
     return '', 204
 
+@app.delete('/internal/krs/matkul/<kode_mk>')
+def cleanup_krs_matkul(kode_mk):
+    Krs.query.filter_by(kode_mk=kode_mk).delete()
+    db.session.commit()
+    return jsonify({'pesan': f'KRS untuk {kode_mk} berhasil dibersihkan'}), 200
+
 def init_db():
     for _ in range(30):
         try:
             with app.app_context():
                 db.create_all()
             return
-        except Exception as e:
+        except Exception:
             time.sleep(2)
     raise RuntimeError('database tidak tersedia')
 
